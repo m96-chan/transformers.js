@@ -162,7 +162,7 @@ export class ChatterboxModel extends ChatterboxPreTrainedModel {
 
     /** @type {PreTrainedModel['generate']} */
     async generate(params) {
-        const { sequences, audio_tokens, speaker_embeddings, speaker_features } = /** @type {any} */ (
+        const { sequences, audio_tokens, speaker_embeddings, speaker_features, past_key_values } = /** @type {any} */ (
             await super.generate({
                 ...params,
                 return_dict_in_generate: true,
@@ -182,6 +182,7 @@ export class ChatterboxModel extends ChatterboxPreTrainedModel {
             speaker_features,
             speaker_embeddings,
         });
+        await past_key_values?.dispose();
         return waveform;
     }
 }
