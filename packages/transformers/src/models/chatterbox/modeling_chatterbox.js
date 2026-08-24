@@ -169,20 +169,23 @@ export class ChatterboxModel extends ChatterboxPreTrainedModel {
             })
         );
 
-        const new_tokens = sequences.slice(null, [
-            /** @type {Tensor} */ (params.input_ids).dims[1], // Exclude start of speech token
-            -1, // Exclude end of speech token
-        ]);
+        try {
+            const new_tokens = sequences.slice(null, [
+                /** @type {Tensor} */ (params.input_ids).dims[1], // Exclude start of speech token
+                -1, // Exclude end of speech token
+            ]);
 
-        const silence_tokens = full([new_tokens.dims[0], 3], SILENCE_TOKEN); // Add 3 silence tokens
-        const speech_tokens = cat([audio_tokens, new_tokens, silence_tokens], 1);
+            const silence_tokens = full([new_tokens.dims[0], 3], SILENCE_TOKEN); // Add 3 silence tokens
+            const speech_tokens = cat([audio_tokens, new_tokens, silence_tokens], 1);
 
-        const { waveform } = await sessionRun(this.sessions['conditional_decoder'], {
-            speech_tokens,
-            speaker_features,
-            speaker_embeddings,
-        });
-        await past_key_values?.dispose();
-        return waveform;
+            const { waveform } = await sessionRun(this.sessions['conditional_decoder'], {
+                speech_tokens,
+                speaker_features,
+                speaker_embeddings,
+            });
+            return waveform;
+        } finally {
+            await past_key_values?.dispose();
+        }
     }
 }
